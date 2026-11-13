@@ -1,0 +1,76 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function tokenEmail() {
+      return request.auth.token.get('email', null);
+    }
+
+    function isOwner() {
+      return signedIn()
+        && request.auth.token.get('email_verified', false) == true
+        && tokenEmail() == 'abobaker096605@gmail.com'
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.phone == '0114071454';
+    }
+
+    function profileKeys() {
+      return ['name', 'email', 'phone', 'photoURL', 'balance', 'createdAt'];
+    }
+
+    match /users/{userId} {
+      allow read: if signedIn() && (request.auth.uid == userId || isOwner());
+
+      allow create: if signedIn()
+        && request.auth.uid == userId
+        && request.resource.data.keys().hasOnly(profileKeys())
+        && request.resource.data.balance == 0
+        && (request.resource.data.email == null || request.resource.data.email == tokenEmail())
+        && (request.resource.data.name == null || request.resource.data.name is string);
+
+      allow update: if signedIn() && (
+        (request.auth.uid == userId
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name', 'phone', 'photoURL', 'email'])
+          && request.resource.data.balance == resource.data.balance
+          && (request.resource.data.email == resource.data.email || request.resource.data.email == tokenEmail()))
+        || (isOwner()
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['balance'])
+          && request.resource.data.balance is number)
+      );
+
+      allow delete: if false;
+    }
+
+    match /topups/{topupId} {
+      allow read: if signedIn() && (resource.data.uid == request.auth.uid || isOwner());
+
+      allow create: if signedIn()
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.keys().hasOnly(['uid', 'name', 'phone', 'email', 'amount', 'method', 'transactionNumber', 'screenshot', 'status', 'createdAt'])
+        && request.resource.data.status == 'pending'
+        && request.resource.data.amount is number
+        && request.resource.data.amount > 0
+        && request.resource.data.amount <= 1000000
+        && request.resource.data.method in ['fawry', 'faisal', 'mycashi']
+        && request.resource.data.transactionNumber is string
+        && request.resource.data.transactionNumber.size() > 0
+        && request.resource.data.transactionNumber.size() <= 60
+        && request.resource.data.screenshot is string
+        && request.resource.data.screenshot.size() <= 1000000
+        && request.resource.data.name is string
+        && request.resource.data.phone is string;
+
+      allow update: if isOwner()
+        && resource.data.status == 'pending'
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'reviewedAt'])
+        && request.resource.data.status in ['approved', 'rejected'];
+
+      allow delete: if false;
+    }
+  }
+}
