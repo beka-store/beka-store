@@ -30,6 +30,7 @@ export default function CheckoutModal({ game, pkg, paymentMethods, onClose }: Ch
   const [paymentMethodId, setPaymentMethodId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [receiptSaved, setReceiptSaved] = useState(true);
 
   const paymentMethod = paymentMethods.find((method) => method.id === paymentMethodId) ?? null;
 
@@ -46,7 +47,7 @@ export default function CheckoutModal({ game, pkg, paymentMethods, onClose }: Ch
     setIsSubmitting(true);
     setSubmitError(null);
     try {
-      await submitOrder({
+      const result = await submitOrder({
         gameId: game.id,
         packageId: pkg.id,
         playerId: player.playerId,
@@ -54,9 +55,14 @@ export default function CheckoutModal({ game, pkg, paymentMethods, onClose }: Ch
         paymentMethodId: paymentMethod.id,
         receipt,
       });
+      setReceiptSaved(result.receiptSaved);
       setStep('done');
     } catch {
-      setSubmitError('تعذر إرسال الطلب، تأكد من الاتصال وحاول مرة أخرى.');
+      setSubmitError(
+        navigator.onLine
+          ? 'ما قدرنا نحفظ طلبك الآن، جرّب تاني بعد شوية.'
+          : 'الإنترنت مقطوع عندك، اتأكد من الشبكة وجرّب تاني.'
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -146,6 +152,7 @@ export default function CheckoutModal({ game, pkg, paymentMethods, onClose }: Ch
               gameName={game.name_ar}
               packageLabel={pkg.label_ar}
               playerId={player.playerId}
+              receiptSaved={receiptSaved}
               onClose={onClose}
             />
           )}

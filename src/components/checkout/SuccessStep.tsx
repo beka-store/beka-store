@@ -5,12 +5,21 @@ interface SuccessStepProps {
   gameName: string;
   packageLabel: string;
   playerId: string;
+  receiptSaved: boolean;
   onClose: () => void;
 }
 
-export default function SuccessStep({ gameName, packageLabel, playerId, onClose }: SuccessStepProps) {
+export default function SuccessStep({
+  gameName,
+  packageLabel,
+  playerId,
+  receiptSaved,
+  onClose,
+}: SuccessStepProps) {
   const whatsappUrl = buildWhatsAppUrl(
-    `مرحباً، أرسلت طلب شحن ${gameName} - ${packageLabel} للاعب ID: ${playerId}، وهذا إشعار التحويل.`
+    `مرحباً، أرسلت طلب شحن ${gameName} - ${packageLabel} للاعب ID: ${playerId}${
+      receiptSaved ? '، وهذا إشعار التحويل.' : '، وما قدرت أرفع صورة الإشعار هنا.'
+    }`
   );
 
   return (
@@ -19,10 +28,15 @@ export default function SuccessStep({ gameName, packageLabel, playerId, onClose 
         <CheckCircle2 className="h-9 w-9" />
       </span>
       <div>
-        <h2 className="text-xl font-bold text-zinc-50">تم استلام طلبك</h2>
+        <h2 className="text-xl font-bold text-zinc-50">تم استلام طلبك بنجاح</h2>
         <p className="mt-2 text-sm leading-relaxed text-zinc-400">
-          سنراجع إشعار التحويل ونشحن الباقة على حسابك في أقرب وقت. لتسريع التأكيد أرسل الإشعار عبر واتساب.
+          طلبك اتحفظ عندنا، وبنراجع التحويل ونشحن الباقة على حسابك في أقرب وقت.
         </p>
+        {!receiptSaved && (
+          <p className="mt-3 rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-sm leading-relaxed text-amber-200">
+            ما وصلت صورة الإشعار. ابعتها لينا على واتساب عشان نسرّع التأكيد.
+          </p>
+        )}
       </div>
       <div className="flex w-full flex-col gap-3">
         <a

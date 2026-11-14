@@ -43,19 +43,28 @@ export function validateReceipt(file: File): string | null {
   return null;
 }
 
-export async function submitOrder(input: OrderInput): Promise<void> {
-  const extension = RECEIPT_EXTENSIONS[input.receipt.type];
-  if (!extension) throw new Error('Unsupported receipt type');
+export interface SubmitOrderResult {
+  receiptSaved: boolean;
+}
+
+async function uploadReceipt(receipt: File): Promise<string | null> {
+  const extension = RECEIPT_EXTENSIONS[receipt.type];
+  if (!extension) return null;
 
   const receiptPath = `${crypto.randomUUID()}.${extension}`;
-
-  const { error: uploadError } = await supabase.storage
-    .from('receipts')
-    .upload(receiptPath, input.receipt, {
-      contentType: input.receipt.type,
+  try {
+    const { error } = await supabase.storage.from('receipts').upload(receiptPath, receipt, {
+      contentType: receipt.type,
       upsert: false,
     });
-  if (uploadError) throw new Error(uploadError.message);
+    return error ? null : receiptPath;
+  } catch {
+    return null;
+  }
+}
+
+export async function submitOrder(input: OrderInput): Promise<SubmitOrderResult> {
+  const receiptPath = await uploadReceipt(input.receipt);
 
   const { error } = await supabase.from('orders').insert({
     game_id: input.gameId,
@@ -66,4 +75,6 @@ export async function submitOrder(input: OrderInput): Promise<void> {
     receipt_path: receiptPath,
   });
   if (error) throw new Error(error.message);
+
+  return { receiptSaved: receiptPath !== null };
 }
