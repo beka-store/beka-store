@@ -1,24 +1,11 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { ArrowRight, Loader2 } from 'lucide-react';
 import { RecaptchaVerifier, signInWithPhoneNumber, type ConfirmationResult } from 'firebase/auth';
-import { getFirebase } from '@/lib/firebase';
+import { describeAuthError } from '@/lib/authErrors';
+import { getFirebase, isFirebaseConfigured } from '@/lib/firebase';
 import { normalizeLocalPhone, toE164 } from '@/lib/phone';
 
 const RECAPTCHA_CONTAINER_ID = 'beko-recaptcha';
-
-const PHONE_ERROR_MESSAGES: Record<string, string> = {
-  'auth/invalid-phone-number': 'رقم الهاتف غير صحيح، تأكد من كتابته.',
-  'auth/missing-phone-number': 'أدخل رقم الهاتف أولاً.',
-  'auth/too-many-requests': 'تم إرسال طلبات كثيرة، حاول لاحقاً.',
-  'auth/invalid-verification-code': 'رمز التحقق غير صحيح.',
-  'auth/code-expired': 'انتهت صلاحية الرمز، اطلب رمزاً جديداً.',
-  'auth/quota-exceeded': 'تم تجاوز حد الرسائل اليومي، حاول لاحقاً.',
-};
-
-function describePhoneError(err: unknown): string {
-  const code = (err as { code?: string }).code ?? '';
-  return PHONE_ERROR_MESSAGES[code] ?? 'تعذر إكمال العملية، حاول مرة أخرى.';
-}
 
 interface PhoneSignInProps {
   onBack: () => void;
@@ -49,6 +36,7 @@ export default function PhoneSignIn({ onBack }: PhoneSignInProps) {
 
   async function handleSendCode(event: FormEvent) {
     event.preventDefault();
+    if (!isFirebaseConfigured) return;
     const local = normalizeLocalPhone(phone);
     if (!local) {
       setError('أدخل رقم هاتف سوداني صحيح، مثال: 0912345678');
@@ -62,7 +50,7 @@ export default function PhoneSignIn({ onBack }: PhoneSignInProps) {
     } catch (err) {
       verifierRef.current?.clear();
       verifierRef.current = null;
-      setError(describePhoneError(err));
+      setError(describeAuthError(err));
     } finally {
       setIsBusy(false);
     }
@@ -76,7 +64,7 @@ export default function PhoneSignIn({ onBack }: PhoneSignInProps) {
     try {
       await confirmation.confirm(code.trim());
     } catch (err) {
-      setError(describePhoneError(err));
+      setError(describeAuthError(err));
     } finally {
       setIsBusy(false);
     }

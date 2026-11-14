@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react
 import {
   GoogleAuthProvider,
   onAuthStateChanged,
-  signInWithPopup,
+  signInWithRedirect,
   signOut as firebaseSignOut,
   type User,
 } from 'firebase/auth';
@@ -10,8 +10,6 @@ import { AuthContext, type AuthContextValue } from '@/context/authContext';
 import { getFirebase, isFirebaseConfigured } from '@/lib/firebase';
 import { ensureProfile, subscribeToProfile } from '@/lib/profiles';
 import type { UserProfile } from '@/types';
-
-const POPUP_CANCELLED_CODES = ['auth/popup-closed-by-user', 'auth/cancelled-popup-request'];
 
 export default function AuthProvider({ children }: { children: ReactNode }) {
   const [firebaseUser, setFirebaseUser] = useState<User | null>(null);
@@ -62,14 +60,7 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signInWithGoogle = useCallback(async () => {
-    const { auth } = getFirebase();
-    try {
-      await signInWithPopup(auth, new GoogleAuthProvider());
-    } catch (err) {
-      const code = (err as { code?: string }).code ?? '';
-      if (POPUP_CANCELLED_CODES.includes(code)) return;
-      throw err;
-    }
+    await signInWithRedirect(getFirebase().auth, new GoogleAuthProvider());
   }, []);
 
   const signOut = useCallback(async () => {

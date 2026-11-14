@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { Loader2, Smartphone, Wallet } from 'lucide-react';
 import PhoneSignIn from '@/components/wallet/PhoneSignIn';
 import { useAuth } from '@/hooks/useAuth';
+import { describeAuthError } from '@/lib/authErrors';
+import { isFirebaseConfigured } from '@/lib/firebase';
 
 export default function SignInPanel() {
   const { signInWithGoogle } = useAuth();
@@ -14,9 +16,8 @@ export default function SignInPanel() {
     setIsGoogleBusy(true);
     try {
       await signInWithGoogle();
-    } catch {
-      setError('تعذر تسجيل الدخول بحساب قوقل، حاول مرة أخرى.');
-    } finally {
+    } catch (err) {
+      setError(describeAuthError(err));
       setIsGoogleBusy(false);
     }
   }
@@ -32,6 +33,12 @@ export default function SignInPanel() {
           <p className="text-sm leading-relaxed text-zinc-400">سجل دخولك لعرض رصيدك وشحن محفظتك بسهولة.</p>
         </div>
 
+        {!isFirebaseConfigured && (
+          <p className="mb-4 rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-center text-sm text-amber-200">
+            خدمة تسجيل الدخول غير مفعلة بعد، ستتوفر قريباً.
+          </p>
+        )}
+
         {isPhoneMode ? (
           <PhoneSignIn onBack={() => setIsPhoneMode(false)} />
         ) : (
@@ -39,7 +46,7 @@ export default function SignInPanel() {
             <button
               type="button"
               onClick={handleGoogle}
-              disabled={isGoogleBusy}
+              disabled={isGoogleBusy || !isFirebaseConfigured}
               className="inline-flex w-full items-center justify-center gap-3 rounded-xl bg-white px-5 py-3 text-sm font-bold text-zinc-900 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-white/10 active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isGoogleBusy ? <Loader2 className="h-5 w-5 animate-spin" /> : <GoogleMark />}
@@ -48,7 +55,8 @@ export default function SignInPanel() {
             <button
               type="button"
               onClick={() => setIsPhoneMode(true)}
-              className="inline-flex w-full items-center justify-center gap-3 rounded-xl border border-zinc-700 px-5 py-3 text-sm font-bold text-zinc-100 transition-colors duration-200 hover:border-brand-500 hover:bg-brand-500/10"
+              disabled={!isFirebaseConfigured}
+              className="inline-flex w-full items-center justify-center gap-3 rounded-xl border border-zinc-700 px-5 py-3 text-sm font-bold text-zinc-100 transition-colors duration-200 hover:border-brand-500 hover:bg-brand-500/10 disabled:cursor-not-allowed disabled:opacity-60"
             >
               <Smartphone className="h-5 w-5 text-brand-300" />
               سجل دخول برقم الهاتف
