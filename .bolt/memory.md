@@ -2,37 +2,43 @@
 
 ## Product intent & audience
 
-- Arabic gaming top-up store ("beka-store") targeting mobile/Android users primarily.
-- Users select game packages (PUBG, Free Fire), enter player ID + WhatsApp number, choose payment method, upload payment receipt.
-- Includes sign-in via Google and phone (OTP) through Firebase Auth.
+- Arabic gaming top-up store (beka-store) for PUBG, Free Fire, and similar games.
+- Users select packages, enter player ID + WhatsApp number, choose payment method, upload receipts.
+- Target audience: Arabic-speaking gamers, specifically Sudanese dialect.
+- Guest-friendly: no forced login for browsing, wallet, orders, or favorites.
 
 ## Brand personality & voice
 
-- Arabic-first interface; all user-facing messages in Arabic.
-- Tone: straightforward, helpful, production-grade — not generic or templated.
+- Dark, modern gaming aesthetic.
+- All UI text in Arabic Sudanese dialect.
+- Bilingual labels acceptable in navigation (Arabic primary, English secondary).
 
 ## Visual design & UX direction
 
-- Beautiful, non-cookie-cutter UI; production-worthy by default.
-- Tailwind CSS for styling; Lucide React for all icons.
-- React hooks; JSX with `@/` path alias (`src/`).
-- Sign-in uses full-page redirect (not popup) to work on Android WebView/browsers.
-- Forms collect: player ID, WhatsApp number, payment method selection, payment receipt upload.
+- RTL layout; drawers/panels slide from the right.
+- Hamburger button placed top-left (RTL convention).
+- Dark theme throughout; modern, production-quality, non-cookie-cutter.
+- Tech: Vite + React + JSX, Tailwind CSS, Lucide React icons only.
+- `@/` path alias maps to `src/`.
+- Sidebar drawer with 7 items: Home, Shop, Wallet, My Orders, Favorites, Contact Us, Login/Guest.
+- Shop and Wallet scroll to anchor sections on home page (`#games`, `#wallet`).
+- Contact Us opens WhatsApp.
+- My Orders and Favorites are placeholder "coming soon" screens.
 
 ## Decisions, constraints & rationale
 
-- Firebase Auth was never configured (empty placeholders) — caused all sign-in failures.
-- Google sign-in switched from popup to full-page redirect for Android compatibility.
-- Sign-in buttons disabled with Arabic notice when Firebase not yet set up (graceful degradation).
-- Arabic error messages added for sign-in failures.
-- Build and type check pass after fixes.
-- **Blocked:** Firebase config values still needed from user (API key, auth domain, project ID, storage bucket, sender ID, app ID).
-- **Blocked:** Google and Phone sign-in providers must be enabled in Firebase console.
-- **Blocked:** Store web domain must be added to Firebase authorized domains.
+- Do not install extra UI/icon packages beyond Lucide React unless explicitly requested.
+- Guest users can access all sidebar items; no login walls.
+- Firebase auth still present but slated for removal; Supabase migration pending.
+- `authErrors` helper restored with Arabic messages to unblock build.
+- Checkout payment step had mismatched prop name; fixed minimally.
+- Placeholder routes created for Orders and Favorites pending real implementations.
+- Pending work: Supabase sign-in, guest checkout flow, wallet section completion, Firebase removal.
 
 ## Open questions & assumptions
 
-- Firebase config values pending from owner.
-- Whether Firestore/database rules need publishing once config is provided (assumed yes).
-- Which payment methods are supported (not yet detailed in UI context).
-- Whether order data is stored in Firebase or elsewhere (assumed Firebase once configured).
+- Supabase backend details (URL, keys, schema) not yet provided.
+- Payment methods and receipt verification flow not fully defined.
+- Real My Orders and Favorites pages need specs/data sources.
+- Wallet section: currency, top-up methods, and balance logic unclear.
+- Whether Firebase removal should proceed now or wait for Supabase parity.
