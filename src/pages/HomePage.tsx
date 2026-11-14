@@ -56,9 +56,11 @@ export default function HomePage({ games, packages }: HomePageProps) {
         </div>
       </section>
 
-      <WalletSection />
+      <div id="wallet">
+        <WalletSection />
+      </div>
 
-      <section className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
+      <section id="games" className="mx-auto max-w-6xl scroll-mt-20 px-4 py-12 sm:px-6">
         <div className="mb-6 flex items-end justify-between">
           <h2 className="text-xl font-bold text-zinc-50 sm:text-2xl">الألعاب</h2>
           <span className="text-sm text-zinc-500">{visibleGames.length} لعبة</span>

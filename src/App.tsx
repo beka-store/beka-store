@@ -7,7 +7,13 @@ import AccountPage from '@/pages/AccountPage';
 import AdminPage from '@/pages/AdminPage';
 import GamePage from '@/pages/GamePage';
 import HomePage from '@/pages/HomePage';
-import { ACCOUNT_ROUTE, ADMIN_ROUTE, STORE_NAME } from '@/lib/config';
+import {
+  ACCOUNT_ROUTE,
+  ADMIN_ROUTE,
+  FAVORITES_ROUTE,
+  ORDERS_ROUTE,
+  STORE_NAME,
+} from '@/lib/config';
 import { useAuth } from '@/hooks/useAuth';
 import { useCatalog } from '@/hooks/useCatalog';
 import { navigateTo, useHashRoute } from '@/hooks/useHashRoute';
@@ -28,6 +34,15 @@ export default function App() {
     content = <AccountPage />;
   } else if (route === ADMIN_ROUTE) {
     content = <AdminPage />;
+  } else if (route === ORDERS_ROUTE || route === FAVORITES_ROUTE) {
+    content = (
+      <StatusScreen
+        title={route === ORDERS_ROUTE ? 'طلباتي' : 'المفضلة'}
+        description="الصفحة دي جاية قريباً إن شاء الله."
+        actionLabel="العودة إلى الرئيسية"
+        onAction={() => navigateTo('/')}
+      />
+    );
   } else if (isLoading) {
     content = <StatusScreen title="جاري تحميل الألعاب..." loading />;
   } else if (error || !catalog) {

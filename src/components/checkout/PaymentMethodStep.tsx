@@ -4,14 +4,14 @@ import { ArrowLeft, ArrowRight, Check, Wallet } from 'lucide-react';
 interface PaymentMethodStepProps {
   methods?: any[];
   selectedId: string | null;
-  onback: () => void;
-  onnext: (methodId: string) => void;
+  onBack: () => void;
+  onNext: (methodId: string) => void;
 }
 
 export default function PaymentMethodStep({
   selectedId,
-  onback,
-  onnext,
+  onBack,
+  onNext,
 }: PaymentMethodStepProps) {
   // الطرق الجديدة مباشرة وثابتة لضمان الظهور الفوري
   const paymentMethods = [
@@ -33,7 +33,7 @@ export default function PaymentMethodStep({
 
   const handleNext = () => {
     if (choice) {
-      onnext(choice);
+      onNext(choice);
     }
   };
 
@@ -77,7 +77,7 @@ export default function PaymentMethodStep({
       <div className="flex items-center justify-between pt-4">
         <button
           type="button"
-          onClick={onback}
+          onClick={onBack}
           className="flex items-center gap-2 rounded-xl border border-zinc-800 bg-zinc-900 px-5 py-3 text-sm font-semibold text-zinc-300 transition-all hover:border-zinc-700 hover:text-white"
         >
           <ArrowLeft className="h-4 w-4" />
